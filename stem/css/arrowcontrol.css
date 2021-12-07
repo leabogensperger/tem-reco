@@ -1,0 +1,111 @@
+#ab-goDown{
+position:absolute;
+left:32px;
+bottom:0px;
+}
+
+#ab-goUp{
+position:absolute;
+left:32px;
+top:0px;
+}
+
+#ab-goRight{
+	position:absolute;
+top:32px;
+right:0px;
+}
+
+#ab-goLeft{
+position:absolute;
+top:32px;
+left:0px;
+}
+
+#allViewportControlsCTNR{
+position:absolute;
+left:30px;
+width:100px;
+height:100px;
+}
+
+
+#viewportControlCTNR{
+position:absolute;
+bottom:150px;
+left:0px;
+-webkit-user-select: none;
+-moz-user-select:none;
+-webkit-user-drag: none;
+z-index:60;
+}
+
+.arrowControl{
+cursor:pointer;
+}
+#ab-zoomOut{
+left:0px;
+top:40px;
+}
+
+#zoomControlCTNR{
+position:absolute;
+left:105px;
+width:60px;
+height:80px;
+top:10px;
+}
+#zoomControlCTNR .ui-button-text{
+font-size:20px !important;	
+}
+
+.zoomControls{
+font-weight:bold;
+font-size:40px !important;
+position:absolute;
+cursor:pointer;
+width:32px !important;
+overflow:hidden;
+right:0px;
+}
+#ab-zoomIn{
+top:0px;
+left:0px;
+}
+
+#zoomPanToggleButton{
+position:absolute;
+left:-5px;
+top:10px;
+text-align:center;
+vertical-align:middle;
+display:table-cell;
+height:70px;
+}
+
+.panArrows{
+	background-image:url(../images/pan_arrows_icons.png);
+	width:32px;
+	height:32px;
+}
+
+.panArrowUp{
+background-position:-32px 0;	
+}
+
+.panArrowDown{
+background-position:-64px 0;	
+}
+
+.panArrowLeft{
+background-position:0px 0;	
+}
+
+.panArrowRight{
+background-position:-96px 0;	
+}
+
+#zoomPanToggleButton .ui-button-text{
+display:inline-block;
+margin-top:25px;
+}

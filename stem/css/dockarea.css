@@ -1,0 +1,40 @@
+@charset "utf-8";
+/* CSS Document */
+
+#DockArea{
+width:300px;
+display:none;
+position:relative;
+border:0px !important; // to remove the default jQueryUI theme border
+background-color:#000;
+
+}
+
+.DockAreaCTNR{
+overflow-y:auto;
+overflow-x:hidden;
+width:300px;
+}
+
+.dockVerticalBar{
+width: 3px;
+right:0px;
+background-color: #2E2E2E;
+min-height: 100px;
+cursor: e-resize;
+position: absolute;
+right: 0px;
+border-left: 1px solid #444;
+border-right: 1px solid #444;
+}
+
+.dockDraggingVerticalBar{
+width:3px;
+position:absolute;
+background:rgba(37, 92, 116, 0.8);
+cursor:e-resize;
+right:0px;
+top:0px;
+z-index:100;
+display:none;
+}

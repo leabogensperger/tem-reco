@@ -1,0 +1,53 @@
+@charset "utf-8";
+/* CSS Document */
+
+#distanceTableEmptyTableNotice{
+margin:20px 10px;
+}
+
+.pointLabel{
+	font-weight:bold !important;
+	background-color:#000;
+}
+
+.evenRow{
+background-color:#222;
+}
+
+.oddRow{
+background-color:#111;	
+}
+
+table#distanceTable{
+border:1px solid #333;
+padding:0;
+margin:0 15px 0 0;
+}
+
+table#distanceTable td{
+padding:5px;
+}
+
+td.nanDistance{
+text-align:center;
+}
+
+td.distance{
+text-align:right;
+}
+
+
+.hilite{
+	background: #003147 url(../images/ui-bg_highlight-soft_33_003147_1x100.png) 50% 50% repeat-x; font-weight: normal; color: #ffffff;
+}
+
+.pointLabelLeft{
+border-right:1px solid #333;
+text-align:right;
+padding:0px 15px !important;
+}
+
+.pointLabelTop{
+border-bottom:1px solid #333;
+text-align:center;
+}

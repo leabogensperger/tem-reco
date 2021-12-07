@@ -1,0 +1,985 @@
+TATLASViewportMode  = {
+	seadragon :0,
+	waypoint:1,
+	measurement:2		
+};
+
+TATLASViewportState = {
+	idle:0,
+	createMeasurement:1,
+	createWaypoint:2	
+};
+
+
+// Definition of the Polaroid size in inches
+var PolaroidSize = {x:5, y:4};
+
+TATLASViewport = Class.extend({		
+	init: function (DOMid, id, SDXMLPath, SDXMLStr, FibicsXML, pAppC){
+			this.DOMid = DOMid;
+			var AVP = this;
+			this.id = id;
+			// indicates if the SD Viewer has been loaded
+			this.loaded = false;
+			this.pAppC = pAppC;
+			this.sdScaling = 1;
+			this.detector = 'unknown';
+			this.mode = TATLASViewportMode.seadragon;
+			this.state = TATLASViewportState.idle;
+			this.$e = $('#' + this.DOMid);
+			this.useScaling = false;
+			this.offset = new Seadragon.Point(0,0);
+			this.$e.attr('ViewportID', this.id);
+			this.$e.wrap($('<div></div>').attr('class', 'ATLASViewportCTNR'));
+			//this.$e.css('height', this.$e.closest('.ATLASViewportCTNR').height());
+			this.$e.css('width', this.$e.closest('.ATLASViewportCTNR').width());
+			this.sdViewer = new Seadragon.Viewer(DOMid);
+			
+			this.sdViewer.addEventListener("open", function(sdV){
+				AVP.loaded = true;
+				$(AVP).trigger('onLoad');																								
+			});	
+			
+			this.sdViewer.addEventListener("animation", function(sdV){
+				AVP.resetDisplayMeasurementViewportChange();
+			});			
+			
+			this.screenDPmm = -1;
+			this.sdViewer.clearControls(); 
+			this.sdViewer.openDzi(SDXMLPath, SDXMLStr);		
+			this.FibicsXMLStr = FibicsXML;
+			this.SDXMLStr = SDXMLStr;
+			this.XMLPath = XMLPath;
+			this.initCanvas();
+			this.initSeadragonMouseTracker();
+			this.activeMeasurement = null;
+			this.measurementTypeToCreate = null;
+			this.measurementController = this.pAppC.measurementController;
+			this.waypointController = this.pAppC.waypointController;
+			this.displayWaypointList = new Array();
+			this.mosaicDimensionPixel = new Seadragon.Rect(0, 0, 0, 0);
+			this.readXMLData();			
+			// Measurement Related Stuff
+			this.displayMeasurementList = new Array();			
+			this.drawInterval  = 40;
+			this.initDrawing();
+			this.addDetectorNameHTML();
+			
+			// init mobile/touch interface stuff
+			this.mb_initialViewportBounds = null;
+			this.mb_previousZoomFactor = 1;
+			this.mb_initialXY = new Seadragon.Point(0,0);
+			this.mb_initNormXY = new Seadragon.Point(0,0);
+			this.mb_previousDelta = new Seadragon.Point(0,0);
+			
+			this.assignMobileEvents();
+			
+			$(this.canvas).on('selectstart', function(){
+				return false;
+			});
+			
+			
+			$(this.canvas).on(TouchMouseEvent.DOWN, function(e){	
+				var genesisEvent = undefined;
+				if(e.originalEvent != undefined) 
+				var genesisEvent = e.originalEvent.originalEvent;																											 
+																											 
+				if(e.offsetX != undefined)							  
+					var pt = new TATLASPoint(e.offsetX, e.offsetY);
+				else 
+					var pt = new TATLASPoint(e.pageX-$(this).offset().left, e.pageY - $(this).offset().top);
+				
+				// must differentiate between a mouse and touch
+				if( genesisEvent.type == 'touchstart'){ // finger event!
+				
+					if(genesisEvent.touches.length == 1){  // single finger
+						AVP.mousedown(pt);
+					}
+					else{
+						//alert('2');
+					}
+				
+				}
+				else
+					AVP.mousedown(pt);
+				
+				e.preventDefault();
+			});
+			$(this.canvas).on(TouchMouseEvent.MOVE, function(e){
+				if(e.offsetX != undefined)							  
+					var pt = new TATLASPoint(e.offsetX, e.offsetY);
+				else 
+					var pt = new TATLASPoint(e.pageX-$(this).offset().left, e.pageY - $(this).offset().top);
+				AVP.mousemove(pt);				
+				// must prevent the default behavior of the event if it reached here
+				// that will prevent from the whole page to pan in an iPad (for example)
+				e.preventDefault();
+			});
+			$(this.canvas).on(TouchMouseEvent.UP, function(e){
+				if(e.offsetX != undefined)							  
+					var pt = new TATLASPoint(e.offsetX, e.offsetY);
+				else 
+					var pt = new TATLASPoint(e.pageX-$(this).offset().left, e.pageY - $(this).offset().top);
+				AVP.mouseup(pt);				
+			});
+			$(this.canvas).dblclick(function(e){
+				if(e.offsetX != undefined)							  
+					var pt = new TATLASPoint(e.offsetX, e.offsetY);
+				else 
+					var pt = new TATLASPoint(e.pageX-$(this).offset().left, e.pageY - $(this).offset().top);
+				AVP.dblclick(pt);				
+			});
+			$(this.canvas).on('click', function(e){  //former Click
+				if(e.offsetX != undefined)							  
+					var pt = new TATLASPoint(e.offsetX, e.offsetY);
+				else 
+					var pt = new TATLASPoint(e.pageX-$(this).offset().left, e.pageY - $(this).offset().top);
+				AVP.click(pt);				
+			});
+			
+			var me = this;
+			$(this.canvas).mouseenter(function(e){																 
+				$(me.pAppC).trigger('showCrosshair');
+			});
+			$(this.canvas).mouseleave(function(e){
+				$(me.pAppC).trigger('hideCrosshair');
+			});
+			
+			this.registerEventToMeasurementController();
+			this.registerEventToWaypointController();
+			this.crosshair = new TCrosshair(this);
+			$(this).trigger('onLoad', this);
+			
+			$(this.pAppC).on('showCrosshair', function(e,x,y){	
+				me.pAppC.ATLASViewportController.mouseIn = true;																		 
+				me.crosshair.show();
+			});
+			$(this.pAppC).on('hideCrosshair', function(e,x,y){																								 
+				me.pAppC.ATLASViewportController.mouseIn = false;
+				me.crosshair.hide();
+			});
+			$(this.pAppC).on('moveCrosshair', function(e,x,y){																								 
+				me.crosshair.pt.x = x;
+				me.crosshair.pt.y = y;
+			});
+			
+			// the waypoint used when in creation mode (managed by the WP Controller)
+			this.creationWaypointD = new TDisplayWaypoint(this.waypointController.creationWaypoint);
+			this.creationWaypointD.isCreation = true;
+	},
+	assignMobileEvents: function(){
+		var me = this;
+		
+/*			alert('alex');
+			me.mb_initialViewportBounds = me.sdViewer.viewport.getBounds();
+			// $('#scalingQty').html('Started');
+			me.mb_previousZoomFactor = 1;
+			me.mb_initialXY.x = e.touches[0].screenX;
+			me.mb_initialXY.y = e.touches[0].screenY;
+			me.mb_initNormXY =  me.sdViewer.viewport.pointFromPixel(me.mb_initialXY);
+			me.mb_previousDelta.x = 0;
+			me.mb_previousDelta.y = 0;
+			
+		}
+		
+		$('body')[0].onGestureChange = function(e){
+			alert('alex');		
+		}
+*/
+	},
+	close: function(){
+		this.sdViewer.close();
+		this.$e.closest('.ATLASViewportCTNR').remove();
+	},
+	registerEventToWaypointController: function(){
+		var me = this;
+		$(this.waypointController).on('onAddWaypoint', function(e, newWP){
+			// must create the new displayWaypoint
+			var newDisplayWP = new TDisplayWaypoint(newWP);
+			me.activateWaypoint(newDisplayWP);			
+			me.displayWaypointList.push(newDisplayWP);
+		});
+		$(this.waypointController).on('onDeleteWaypoint', function(e, WP){
+			me.displayWaypointList.removeItem(me.getDisplayOfWaypoint(WP));		
+		});
+	},
+	registerEventToMeasurementController : function(){
+		var me = this;		
+		$(this.measurementController).on('onAddMeasurement',  function(e, newM){
+			// must create the display version of the newly created measurement in the measurement controller....
+			
+			switch(newM.type){
+				case TMeasurementType.line:
+					me.activateMeasurement(new TDisplayLine(newM));
+				break;
+				case TMeasurementType.textannotation:
+					me.activateMeasurement(new TDisplayTextAnnotation(newM));
+				break;
+				case TMeasurementType.horizontaltool:
+					me.activateMeasurement(new TDisplayLongMeasurement(newM));
+				break;	
+				case TMeasurementType.verticaltool:
+					me.activateMeasurement(new TDisplayLongMeasurement(newM));
+				break;
+				case TMeasurementType.pointtopoint:
+					me.activateMeasurement(new TDisplaySimpleMeasurement(newM));	
+				break;
+				case TMeasurementType.protractor:
+					me.activateMeasurement(new TDisplayProtractor(newM));
+				break;
+				case TMeasurementType.ruler:
+					me.activateMeasurement(new TDisplayRuler(newM));
+				break;
+				case TMeasurementType.rectangulararea:
+					me.activateMeasurement(new TDisplayRectangularArea(newM));
+				break;
+				case TMeasurementType.ellipticalarea:
+					me.activateMeasurement(new TDisplayEllipticalArea(newM));
+				break;
+				case TMeasurementType.exporttopng:
+					me.activateMeasurement(new TDisplayExportToPNG(newM));
+				break;
+				case TMeasurementType.rectangle:
+					me.activateMeasurement(new TDisplayRectangularArea(newM));
+				break;
+				case TMeasurementType.ellipse:
+					me.activateMeasurement(new TDisplayEllipticalArea(newM));
+				break;
+			}
+			
+			me.activeMeasurement.measurement.setState(TMeasurementState.inCreation);
+			me.displayMeasurementList.push(me.activeMeasurement);
+		});
+		
+		$(this.measurementController).on('onSetMeasurementToCreate',  function(e, mType){
+			me.state = TATLASViewportState.createMeasurement;
+			me.measurementTypeToCreate = mType;		
+			me.activateMeasurement(null);
+		});
+		
+		$(this.measurementController).on('onDeleteMeasurement',  function(e, m){
+			var dm = me.getDisplayOfMeasurement(m);
+			me.deleteDisplayMeasurement(dm);
+		});		
+	},
+	getDisplayOfMeasurement:function(M){
+		var  i = 0;
+		while(i < this.displayMeasurementList.length){
+			if(this.displayMeasurementList[i].measurement.uid == M.uid){
+				return this.displayMeasurementList[i];
+			}
+			i++;
+		}
+	},
+	getDisplayOfWaypoint:function(dwp){
+		var  i = 0;
+		while(i < this.displayWaypointList.length){
+			if(this.displayWaypointList[i].waypoint.uid == dwp.uid){
+				return this.displayWaypointList[i];
+			}
+			i++;
+		}
+	},
+	initDrawing: function(){
+		var avp = this;
+		this.drawTimer = setInterval(function(){
+			avp.draw();		
+		}, this.drawInterval);
+	},
+	draw: function(){			
+		// Clear the canvas first			
+		this.ctx.clearRect(0,0,this.getDisplayDim().width, this.getDisplayDim().height);		
+		$(this).trigger('onDraw');	
+		
+		if(this.measurementController.showMeasurements){
+			// Draw the non-selected Measurements
+			var i = 0;
+			while(i < this.displayMeasurementList.length){
+				if(!this.displayMeasurementList[i].measurement.selected){				
+					this.displayMeasurementList[i].draw(this);
+				}
+				i++;				
+			}
+			// Draw the selected Measurements
+			var i = 0;
+			while(i < this.displayMeasurementList.length){
+				if(this.displayMeasurementList[i].measurement.selected){				
+					this.displayMeasurementList[i].draw(this);
+				}
+				i++;				
+			}
+		}
+			
+		// Draw the Waypoints non-selected
+		i = 0;
+		while(i < this.displayWaypointList.length){
+			if(!this.displayWaypointList[i].waypoint.selected)
+				this.displayWaypointList[i].draw(this);
+			i++;				
+		}
+		// Draw the Waypoints selected
+		i = 0;
+		while(i < this.displayWaypointList.length){
+			if(this.displayWaypointList[i].waypoint.selected)
+				this.displayWaypointList[i].draw(this);
+			i++;				
+		}
+		this.crosshair.draw(this);
+		
+		if(this.waypointController != undefined){
+			if((this.waypointController.state == TWaypointControllerState.createWaypoint) && this.pAppC.ATLASViewportController.mouseIn){
+				// draw the waypoint where it will be
+				this.creationWaypointD.draw(this);
+			}
+		}
+		
+	},
+	getDisplayDim: function(){
+		r = new Seadragon.Rect(0,0,0,0);
+		
+		r.x = this.$e.closest('.ATLASViewportCTNR').offset().left;
+		r.y = this.$e.closest('.ATLASViewportCTNR').offset().top;
+		r.width = this.$e.closest('.ATLASViewportCTNR').width();
+		r.height = this.$e.closest('.ATLASViewportCTNR').height();
+		
+		return r;		
+	},
+	initCanvas : function(){
+		
+		// insert the canvas in the code
+		this.canvas = $("<canvas></canvas>").addClass('ATLASViewportCanvas').attr({
+			id:'MeasurementCanvas' + this.id,
+			'ViewportID': this.id
+		}).get(0);
+		this.ctx = 	this.canvas.getContext('2d');
+
+		var	d = this.getDisplayDim();
+		$(this.canvas).width(d.width);
+		$(this.canvas).height(d.height);
+		$(this.canvas).appendTo(this.$e.closest('.ATLASViewportCTNR'));
+	},	
+	initSeadragonMouseTracker: function(){
+		var avp = this;
+		// this allows to have the mouse events that occur on the Canvas 
+		//	(which is on top of the  
+		
+		this.sdMouseTracker = new Seadragon.MouseTracker($(this.canvas).attr('id'));		
+		this.sdMouseTracker.enterHandler = this.sdViewer.tracker.enterHandler ;
+		this.sdMouseTracker.exitHandler = this.sdViewer.tracker.exitHandler ;
+		this.sdMouseTracker.pressHandler = this.sdViewer.tracker.pressHandler ;
+		this.sdMouseTracker.releaseHandler = this.sdViewer.tracker.releaseHandler ;
+		//this.sdMouseTracker.clickHandler = this.sdViewer.tracker.clickHandler ;
+		this.sdMouseTracker.dragHandler = this.sdViewer.tracker.dragHandler ;
+		this.sdMouseTracker.scrollHandler = this.sdViewer.tracker.scrollHandler ;
+		this.sdMouseTracker.setTracking(true);		
+	},
+	addDisplayMeasurement: function(aM){
+		this.displayMeasurementList.push(aM);
+		var avp = this;
+	},
+	deleteDisplayMeasurement: function(aM){
+		this.displayMeasurementList.removeItem(aM);
+		
+	},
+	drawDisplayMeasurement: function(){
+		var i = 0;
+		while(i < this.displayMeasurementList.length){
+			m = this.displayMeasurementList[i];
+			m.draw(this);
+			i++;
+		}
+	},
+	resetDisplayMeasurementViewportChange:function(){
+		var i = 0;
+		while(i < this.displayMeasurementList.length){
+			this.displayMeasurementList[i].resetViewportChanged();
+			i++;
+		}
+	},
+	fitTo: function(x, y, w, h){		
+		// First see if they are equal
+		cx = parseFloat(this.$e.closest('.ATLASViewportCTNR').css('left'));
+		cy = parseFloat(this.$e.closest('.ATLASViewportCTNR').css('top'));
+		cw = parseFloat(this.$e.closest('.ATLASViewportCTNR').css('width'));
+		ch = parseFloat(this.$e.closest('.ATLASViewportCTNR').css('height'));
+		if((cw == w)
+			&& (cx == x)
+			&& (cy == y )
+			&& (ch == h)
+		){
+			return false;
+		}	
+		
+		var cssProp = {
+				'left': x + 'px',
+				'width':  w+ 'px',
+				'height':  h + 'px',
+				'top': y + 'px'						
+		};
+		var avp = this;
+		
+		if((this.sdViewer.viewport != undefined) && (this.sdViewer.viewport != null)){
+			var cR = this.sdViewer.viewport.getBounds();			
+		}
+		
+		this.$e.closest('.ATLASViewportCTNR').css('width', w +'px');
+		this.$e.closest('.ATLASViewportCTNR').css('height', h +'px');
+		this.$e.closest('.ATLASViewportCTNR').css('top', y +'px');
+		this.$e.closest('.ATLASViewportCTNR').css('left', x +'px');
+		avp.$e.closest('.ATLASViewport').css('width', w+'px');
+		avp.$e.closest('.ATLASViewport').css('height', h+'px');		
+		$(avp).trigger('onResize', avp);	
+		
+		$(this.canvas).css('width', w +'px');
+		$(this.canvas).css('height', h +'px');	
+		this.canvas.width = w;
+		this.canvas.height = h;
+		
+		
+		
+		if((this.sdViewer.viewport != undefined) && (this.sdViewer.viewport != null)){
+			var nR = this.sdViewer.viewport.getBounds();
+			nR.x = cR.getCenter().x - (nR.width/2);
+			nR.y = cR.getCenter().y - (nR.height/2);		
+			//this.sdViewer.viewport.fitBounds(nR);
+			this.sdViewer.viewport.panTo(cR.getCenter());			
+		}
+		// This is not the best, but there are no easy ways of tieing to the "onEndAnimate" of the 
+		// 	Seadragon Viewport
+		setTimeout(function(){
+			if((avp == undefined)
+					|| (avp == null)
+					|| (avp.sdViewer == undefined)
+					|| (avp.sdViewer == null)
+					|| cR == undefined) return null;
+			avp.sdViewer.viewport.panTo(cR.getCenter(), true);			
+		}, 10);		
+	},
+	panTo: function(xy, immediately){
+		xy.x = Math.min(1, xy.x);
+		xy.y = Math.min(1/this.sdViewer.viewport.aspectRatio, xy.y);
+		xy.x = Math.max(0, xy.x);
+		xy.y = Math.max(0, xy.y);
+		
+		
+		
+		this.sdViewer.viewport.panTo(xy, immediately);	
+		this.resetDisplayMeasurementViewportChange();
+	},	 
+	getPixelSize : function(immediate){	
+		if(this.isSDValid()){
+			if(immediate == undefined) immediate = false
+			var widthMicron = (this.sdViewer.viewport.getBounds(immediate).width * this.sdViewer.source.dimensions.x)*this.nativePixelSize;
+			return widthMicron/this.$e.width();
+		}		
+	},
+	getZoomLevel : function(){
+		var zeroRatio = this.sdViewer.viewport.deltaPixelsFromPoints(this.sdViewer.source.getPixelRatio(0)).x; // don't forget this .x!
+		var highestLevel = Math.max(this.sdViewer.source.minLevel,
+									Math.min(this.sdViewer.source.maxLevel,
+									Math.floor(1 + Math.log(zeroRatio) / Math.log(2))));
+		return highestLevel;
+	},
+	isSDValid: function(){
+		if((this.sdViewer == undefined) 
+				|| (this.sdViewer == null)
+				|| (this.sdViewer.viewport == undefined)
+				|| (this.sdViewer.viewport == null))
+			return false;
+		return true;
+	},
+	setPixelSize: function(ps){
+		var FOVW = ps*this.sdViewer.viewport.getContainerSize().x/1000;
+		var NormWidth = (FOVW/this.nativePixelSize)/this.sdViewer.source.dimensions.x;
+		var zoomByThisMuch = this.sdViewer.viewport.getBounds().width/NormWidth; 
+		this.sdViewer.viewport.zoomBy(zoomByThisMuch);		
+		this.resetDisplayMeasurementViewportChange();
+	},	
+	readXMLData: function(){
+		var pXML = $.parseXML(this.FibicsXMLStr);
+		var pSDXML = $.parseXML(this.SDXMLStr);
+		var FN = $(pXML).find('fibicsinfo');
+		if(FN == undefined) {
+			jAlert('Problem with the XML file!');			
+		}
+		this.mosaicDimensionPixel.width = parseFloat($(pSDXML).find('Size').attr('Width'));
+		this.mosaicDimensionPixel.height = parseFloat($(pSDXML).find('Size').attr('Height'));
+		var AN = FN.find('ATLAS');
+		this.nativePixelSize =  parseFloat(AN.find('RenderedPixelSize').text());		
+		this.pAppC.project.ATLASInfo.imageInfo.width = parseFloat(FN.find('Image').find('Width').text());
+		this.pAppC.project.ATLASInfo.imageInfo.height = parseFloat(FN.find('Image').find('Height').text());
+		this.pAppC.project.ATLASInfo.imageInfo.bbLeft = parseFloat(FN.find('Image').find('BoundingBoxLeft').text());
+		this.pAppC.project.ATLASInfo.imageInfo.bbRight = parseFloat(FN.find('Image').find('BoundingBoxRight').text());
+		this.pAppC.project.ATLASInfo.imageInfo.bbTop = parseFloat(FN.find('Image').find('BoundingBoxTop').text());
+		this.pAppC.project.ATLASInfo.imageInfo.bbBottom = parseFloat(FN.find('Image').find('BoundingBoxBottom').text());
+		this.pAppC.project.ATLASInfo.imageInfo.machine = FN.find('Image').find('Machine').text();		
+		this.pAppC.project.ATLASInfo.imageInfo.beam = FN.find('Image').find('Beam').text();
+		this.pAppC.project.ATLASInfo.imageInfo.aperture = FN.find('Image').find('Aperture').text();
+		this.detector = FN.find('Image').find('Detector').text();
+		this.pAppC.project.ATLASInfo.imageInfo.contrast = parseFloat(FN.find('Image').find('Contrast').text());
+		this.pAppC.project.ATLASInfo.imageInfo.brightness = parseFloat(FN.find('Image').find('Brightness').text());	
+		
+		this.name = FN.find('MosaicInfo').find('name').text();		
+		this.pAppC.project.ATLASInfo.scanInfo.dwellTime = parseFloat(FN.find('Scan').find('Dwell').text());
+		this.pAppC.project.ATLASInfo.scanInfo.lineAvg = parseFloat(FN.find('Scan').find('LineAvg').text());
+		this.pAppC.project.ATLASInfo.scanInfo.FOVX = parseFloat(FN.find('Scan').find('FOV_X').text());
+		this.pAppC.project.ATLASInfo.scanInfo.FOVY = parseFloat(FN.find('Scan').find('FOV_Y').text());
+		this.pAppC.project.ATLASInfo.scanInfo.scanRot = parseFloat(FN.find('Scan').find('ScanRot').text());
+		this.pAppC.project.ATLASInfo.scanInfo.ux = parseFloat(FN.find('Scan').find('Ux').text());
+		this.pAppC.project.ATLASInfo.scanInfo.uy = parseFloat(FN.find('Scan').find('Uy').text());
+		this.pAppC.project.ATLASInfo.scanInfo.vx = parseFloat(FN.find('Scan').find('Vx').text());
+		this.pAppC.project.ATLASInfo.scanInfo.vy = parseFloat(FN.find('Scan').find('Vy').text());
+		this.pAppC.project.ATLASInfo.scanInfo.focus = parseFloat(FN.find('Scan').find('Focus').text());
+		this.pAppC.project.ATLASInfo.scanInfo.stigX = parseFloat(FN.find('Scan').find('StigX').text());
+		this.pAppC.project.ATLASInfo.scanInfo.stigY = parseFloat(FN.find('Scan').find('StigY').text());
+		this.pAppC.project.ATLASInfo.misc.NPVEVersion = FN.find('Application').find('Version').text();
+		this.pAppC.project.ATLASInfo.misc.renderedPixelSize = parseFloat(FN.find('ATLAS').find('RenderedPixelSize').text()); 
+		this.pAppC.project.ATLASInfo.misc.numTile = parseInt(FN.find('ATLAS').find('NumTile').text()); 
+		this.pAppC.project.ATLASInfo.misc.row = parseInt(FN.find('MosaicInfo').find('Row').text()); 
+		this.pAppC.project.ATLASInfo.misc.col = parseInt(FN.find('MosaicInfo').find('Col').text());	
+	
+		this.key = hex_md5(this.name);
+		
+		/*// offset XY
+		var offset = $(pXML).find('viewport').find('offset');
+		if(offset != undefined){
+			this.offset.x = (parseFloat(offset.find('x').html()));///this.nativePixelSize)/this.mosaicDimensionPixel.width;
+			this.offset.y = (parseFloat(offset.find('y').html()));///this.nativePixelSize)/this.mosaicDimensionPixel.width;
+		}
+
+		var nScaling = $(pXML).find('viewport').find('scaling');
+		if((nScaling != undefined) && (nScaling.length > 0))
+			this.sdScaling = 1/parseFloat(nScaling.html());
+			*/
+	},
+	getNormalizedRect: function(){
+		r = this.sdViewer.viewport.getBounds(true);
+		if(this.useScaling){
+			r.width = r.width/this.sdScaling;
+			r.height = r.height/this.sdScaling;
+			r.x = (r.x/this.sdScaling) - this.offset.x;
+			r.y = (r.y/this.sdScaling) - this.offset.y;
+		}
+		return r;
+	},
+	setNormalizedRect: function(r){
+		if(this.useScaling){
+			rOffset = new Seadragon.Rect((r.x*this.sdScaling) + this.offset.x , (r.y *this.sdScaling) + this.offset.y, r.width * this.sdScaling, r.height * this.sdScaling);		
+			this.sdViewer.viewport.fitBounds(rOffset, true);
+		}
+		else
+			this.sdViewer.viewport.fitBounds(r, true);
+	},
+	resize : function(W,H){		
+		r = new Seadragon.Rect(0,0,W, H);
+		r = new Seadragon.Point(W, H);
+		if(this.isSDValid())
+			this.sdViewer.viewport.resize(r);
+		this.$e.width(W);
+		this.$e.height(H);
+		$(this).trigger('onResize', this);
+	},
+	setImageWidth: function(aW){
+		if(this.isSDValid()){
+			var z = (aW/(this.nativePixelSize*this.sdViewer.source.dimensions.x))/this.sdViewer.viewport.getBounds().width;
+			this.sdViewer.viewport.zoomBy(1/z);	
+		}
+	},
+	getFOVDim : function(){
+		d = new TDimension(0,0);
+		if((this.sdViewer == null) || (this.sdViewer == undefined)) return d;
+		if((this.sdViewer.viewport == null) || (this.sdViewer.viewport == undefined)) return d;
+		d.width = this.sdViewer.viewport.getBounds().getSize().x*(this.nativePixelSize*this.sdViewer.source.dimensions.x); 
+		d.height = this.sdViewer.viewport.getBounds().getSize().y*(this.nativePixelSize*this.sdViewer.source.dimensions.x);
+		return d;
+	},
+	// always use the width 
+	getPolaroidMagnification: function(){
+		var fovDim =  this.getFOVDim();
+		return PolaroidSize.x * 25.4/(fovDim.width/1000);//, PolaroidSize.x * 25.4/(fovDim.height/1000) );
+	},
+	getBoundsUm: function(){
+		var r = this.sdViewer.viewport.getBounds();		
+		var tl = this.micronFromPoint(new Seadragon.Point(r.x, r.y));
+		var wh = this.deltaMicronsFromPoints(new Seadragon.Point(r.width, r.height));
+		var b = new Seadragon.Rect();
+		b.x = tl.x;
+		b.y = tl.y;
+		b.width = wh.x;
+		b.height = wh.y;
+		return b;
+	},
+	getCenterUm : function(){
+		var r = this.sdViewer.viewport.getBounds();
+		var c = new Seadragon.point(r.x + r.width/2 , r.y + r.height/2);
+		return this.micronFromPoint(c);
+	},
+	setImageScale: function(v){
+		if(v < this.getMinImageScale()){
+			jAlert('Cannot set the image scale smaller than ' + this.getMinImageScale().toFixed(2) + '%.', 
+					"Image Scale Too Small");
+			return null;
+		}
+		if((v/100) > Seadragon.Config.maxZoomPixelRatio){
+			jAlert('Cannot set the image scale bigger than ' + (Seadragon.Config.maxZoomPixelRatio*100) + '%.', 
+					"Image Scale Too Big");
+			return null;
+		}
+		var xScale = (v/100);	
+		xScale = xScale*this.sdViewer.source.dimensions.x / this.sdViewer.viewport.getContainerSize().x;
+		this.sdViewer.viewport.zoomTo(xScale);		
+	},
+	getMinImageScale : function(){
+		minISWidth = 100*(Seadragon.Config.minZoomImageRatio)*this.sdViewer.viewport.getContainerSize().x/this.sdViewer.source.dimensions.x;
+		minISHeight = 100*(Seadragon.Config.minZoomImageRatio)*this.sdViewer.viewport.getContainerSize().y/this.sdViewer.source.dimensions.y;
+		return Math.min(minISWidth, minISHeight);
+	},
+	// always in screen magnification (never in polaroid!)
+	setMagnification: function(aMag, magMode){
+		if(magMode == undefined) magMode = 'screen';
+		if((magMode == 'screen') && ((this.screenDPmm < 0 ) || (this.screenDPmm == null) || isNaN(aMag))) return null;
+		
+		if(aMag > this.getMaxMagnification(magMode)) {
+			jAlert('The magnification is too large.  Cannot zoom in more than ' + (this.getMaxMagnification()/1000).toFixed(2) + ' kX.',
+					'Magnification Limit');
+			return null;
+		}
+		
+		if(aMag < this.getMinMagnification(magMode)) {
+			jAlert('The magnification is too small.  Cannot zoom out less than ' + this.getMinMagnification().toFixed(2) + 'X.',
+					'Magnification Limit');
+			return null;
+		}
+		if( magMode == 'screen' ){
+			var displayMM = this.sdViewer.viewport.getContainerSize().x/this.screenDPmm;	
+			var displayum = displayMM*1000/aMag;	
+			
+		}
+		else{
+				var displayMM = Math.min(25.4*PolaroidSize.x / (aMag), 25.4*PolaroidSize.y / (aMag) );
+				var displayMM = 25.4*PolaroidSize.x / (aMag);
+				var displayum = displayMM*1000;
+		}
+		var normW = displayum/(this.nativePixelSize*this.sdViewer.source.dimensions.x);
+		var normH = (normW)*this.sdViewer.viewport.getContainerSize().y/this.sdViewer.viewport.getContainerSize().x;
+		var newBounds = new Seadragon.Rect(0,0,normW ,normH );
+		var cBounds = this.sdViewer.viewport.getBounds();	
+		this.sdViewer.viewport.zoomBy(cBounds.width/newBounds.width);
+	},
+	getMaxMagnification : function(magMode){
+		if(magMode == undefined) magMode = 'screen';
+		
+		var maxNormZoomWidth = (this.sdViewer.viewport.getContainerSize().x/this.sdViewer.source.dimensions.x)/(Seadragon.Config.maxZoomPixelRatio);		
+		var maxNormZoomHeight = (this.sdViewer.viewport.getContainerSize().y/this.sdViewer.source.dimensions.y)/(Seadragon.Config.maxZoomPixelRatio);		
+		
+		if(magMode == 'screen') {
+			if(this.screenDPmm == -1) return 1;
+			displayWidthUM = this.sdViewer.viewport.getContainerSize().x/this.screenDPmm*1000;
+			displayHeightUM = this.sdViewer.viewport.getContainerSize().y/this.screenDPmm*1000;
+			maxDisplayUMWidth = maxNormZoomWidth*this.sdViewer.source.dimensions.x*this.nativePixelSize;
+			maxDisplayUMHeight = maxNormZoomHeight*this.sdViewer.source.dimensions.y*this.nativePixelSize;
+			return Math.min(displayWidthUM/maxDisplayUMWidth,displayHeightUM/maxDisplayUMHeight) ;
+		}
+		else{
+			return Math.min(PolaroidSize.x * 25.4/(maxNormZoomWidth/1000), PolaroidSize.y * 25.4/(maxNormZoomHeight/1000))
+		}
+	},
+	getMinMagnification: function(magMode){
+		if(magMode == undefined) magMode = 'screen';
+		var minNormZoomWidth =  1/Seadragon.Config.minZoomImageRatio;
+		var minNormZoomHeight =  1/Seadragon.Config.minZoomImageRatio;
+		var minDisplayUMWidth = minNormZoomWidth*this.sdViewer.source.dimensions.x*this.nativePixelSize;
+		var minDisplayUMHeight = minNormZoomHeight*this.sdViewer.source.dimensions.y*this.nativePixelSize;
+		
+		if(magMode == 'screen') {
+			var displayWidthUM = this.sdViewer.viewport.getContainerSize().x/this.screenDPmm*1000;
+			var displayHeightUM = this.sdViewer.viewport.getContainerSize().y/this.screenDPmm*1000;	
+			return Math.min(displayWidthUM/minDisplayUMWidth,displayHeightUM/minDisplayUMHeight);	
+		}
+		else{		
+			return Math.min(PolaroidSize.x * 25.4/(minDisplayUMWidth/1000), PolaroidSize.y * 25.4/(minDisplayUMHeight/1000))
+		}
+	},	
+	getMaxFOVExtension : function(){		
+		// has to take into account the ratio of the display
+		var dW = this.$e.width();
+		var dH = this.$e.height();
+		var WHRatio = dW/dH;
+		return parseFloat(2*this.nativePixelSize*this.sdViewer.source.dimensions.x * WHRatio);	
+	},
+	getMinFOVExtension : function(){
+		return (this.nativePixelSize/Seadragon.Config.maxZoomPixelRatio)*this.sdViewer.viewport.getContainerSize().x;	
+	},
+	getMinPixelSize : function(){
+		return (this.nativePixelSize/Seadragon.Config.maxZoomPixelRatio)*1000;
+	},
+	getMaxPixelSize : function(){
+		result = (1/Seadragon.Config.minZoomImageRatio)*this.sdViewer.source.dimensions.x*this.nativePixelSize/this.sdViewer.viewport.getContainerSize().x;
+		result2 = (1/Seadragon.Config.minZoomImageRatio)*this.sdViewer.source.dimensions.y*this.nativePixelSize/this.sdViewer.viewport.getContainerSize().y;
+		return Math.max(result*1000, result2*1000);		
+	},
+	getImageScale :  function (){
+		if((this.sdViewer == undefined) || (this.sdViewer.viewport == undefined)) 
+			return 1;
+		var w1 = this.sdViewer.viewport.getContainerSize().x;
+		var w2 = this.sdViewer.source.dimensions.x;
+		var z = this.sdViewer.viewport.getZoom();
+		return 100*z*w1/w2;
+	},
+	pointFromMicron: function(aPt){		
+		var newPt = new Seadragon.Point();		
+		if((!this.sdViewer) || (this.sdViewer == null) || (this.sdViewer == 'undefined')) return newPt;
+		newPt.x = (aPt.x)/ (this.nativePixelSize*this.sdViewer.source.dimensions.x);
+		newPt.y = (aPt.y) / (this.nativePixelSize*this.sdViewer.source.dimensions.x);		
+		return newPt;
+	},	
+	micronFromPoint: function(aPt){
+		var newPt = new Seadragon.Point(aPt.x, aPt.y);
+		newPt.x = (newPt.x * (this.nativePixelSize * this.sdViewer.source.dimensions.x));
+		newPt.y = (newPt.y * (this.nativePixelSize * this.sdViewer.source.dimensions.x)); 
+		return newPt;
+	},
+	pixelFromMicron: function(sdPt, current){
+		if(current == undefined) current = false;
+		var normPt = this.pointFromMicron(sdPt, current);
+		if(this.sdViewer.viewport != undefined){
+			return this.sdViewer.viewport.pixelFromPoint(normPt, current);
+		}			
+	},
+	micronFromPixel: function(pt, current){
+		if(current == undefined) current = false;
+		if(this.sdViewer.viewport != undefined){
+			var sdPt = new Seadragon.Point(pt.x, pt.y);
+			sdPt = this.sdViewer.viewport.pointFromPixel(sdPt, current);
+			return this.micronFromPoint(sdPt, current);
+		}					
+	},
+	deltaPixelsFromMicrons:function(pt, current){
+		if(current == undefined) current = false;		
+		var sdPt = this.deltaPointsFromMicrons(pt, current);
+		if(this.sdViewer.viewport != undefined){
+			return this.sdViewer.viewport.deltaPixelsFromPoints(sdPt, current);
+		}
+	},
+	deltaPointsFromMicrons: function(aPt, current){
+		if(current == undefined) current = false;
+		var newPt = new Seadragon.Point();		
+		if((!this.sdViewer) || (this.sdViewer == null) || (this.sdViewer == 'undefined')) return newPt;
+		newPt.x = (aPt.x)/ (this.nativePixelSize*this.sdViewer.source.dimensions.x);
+		newPt.y = (aPt.y) / (this.nativePixelSize*this.sdViewer.source.dimensions.x);		
+		return newPt;
+	},
+	deltaMicronsFromPoints: function(aPt, current){
+		var newPt = new Seadragon.Point(aPt.x, aPt.y);
+		newPt.x = (newPt.x * (this.nativePixelSize * this.sdViewer.source.dimensions.x));
+		newPt.y = (newPt.y * (this.nativePixelSize * this.sdViewer.source.dimensions.x)); 
+		return newPt;
+	},
+	mousedown: function(pt){
+		var umPt = this.micronFromPixel(pt, true);			
+		
+		try{
+			if(this.measurementController.state == TMeasurementControllerState.create){
+				this.measurementController.deselectAllMeasurement();
+				//Create the measurement of type
+				var m = this.measurementController.createMeasurementOfType(this.measurementTypeToCreate);
+				this.measurementController.addMeasurement(m);
+				m.state = TMeasurementState.inCreation;
+				this.measurementController.selectMeasurement(m);
+				this.activeMeasurement.mousedown(pt, this);
+				this.setMode(TATLASViewportMode.measurement);
+				this.sdMouseTracker.setTracking(false);
+				return false;
+			}
+			
+			switch (this.waypointController.state){
+				case TWaypointControllerState.createWaypoint:
+					this.waypointController.deselectAllWaypoint();
+					var wp = this.waypointController.createWaypoint(umPt.x, umPt.y);
+					this.waypointController.selectWaypoint(wp);
+					this.creationWaypoint = wp;
+					this.setMode(TATLASViewportMode.waypoint);
+					return false;
+				break;
+				case TWaypointControllerState.idle:
+					var i = 0;
+					while(i <  this.displayWaypointList.length){
+						if(this.displayWaypointList[i].hitTest(pt, this)){
+							this.activateWaypoint(this.displayWaypointList[i]);
+							this.displayWaypointList[i].mousedown(pt, this);
+							this.setMode(TATLASViewportMode.waypoint);
+							if(!this.activeWaypoint.waypoint.selected){
+								this.waypointController.deselectAllWaypoint();
+								this.waypointController.selectWaypoint(this.activeWaypoint.waypoint);
+							}
+						}
+						i++;
+					}
+				break;
+				}
+			
+			// hitTest the display Measurement
+			this.activateMeasurement(null);
+			var i = 0;
+			while(i <  this.displayMeasurementList.length){
+				if(this.displayMeasurementList[i].hitTest(pt, this)){
+					// Deselect All the waypoint
+					this.waypointController.deselectAllWaypoint();
+					var m = this.displayMeasurementList[i]; 
+					this.activateMeasurement(m);
+					this.activeMeasurement.mousedown(pt, this);
+					this.setMode(TATLASViewportMode.measurement);				
+					//if((!m.selected) && g_shiftdown){
+					this.measurementController.deselectAllMeasurement();
+					this.measurementController.selectMeasurement(m.measurement);					
+					//}				
+					return false;				
+				}
+				i++;
+			}
+			this.measurementController.deselectAllMeasurement();
+		}
+		finally{
+			this.sdMouseTracker.setTracking(this.mode == TATLASViewportMode.seadragon);
+			if(this.mode == TATLASViewportMode.seadragon){
+				this.waypointController.deselectAllWaypoint();
+			}
+		}
+	},
+	mousemove: function(pt){				
+		$(this.pAppC).trigger('moveCrosshair', [pt.x, pt.y]);
+		switch(this.mode){
+			case TATLASViewportMode.measurement:
+				switch(this.measurementController.state){
+					case TMeasurementControllerState.idle:
+							if(this.activeMeasurement != null){
+								this.activeMeasurement.mousemove(pt, this);
+							}
+							return false;
+						break;
+						case TMeasurementControllerState.inCreation:
+							if(this.activeMeasurement != null){
+								this.activeMeasurement.mousemove(pt, this);
+							}
+							return false;
+						break;
+					}			
+				
+				if(this.activeMeasurement != null){
+					this.activeMeasurement.mousemove(pt, this);
+				}
+			break;
+			case TATLASViewportMode.waypoint:
+				switch (this.waypointController.state){
+					case TWaypointControllerState.idle:
+						if(this.activeWaypoint != null){
+							this.activeWaypoint.mousemove(pt, avp);							
+						}
+					break;
+					case TWaypointControllerState.createWaypoint:
+						var umPt = avp.micronFromPixel(pt);
+						this.creationWaypoint.pt.x = umPt.x;
+						this.creationWaypoint.pt.y = umPt.y;	
+					break;
+				}				
+			break;
+		}
+		if(this.waypointController.state == TWaypointControllerState.createWaypoint){
+			var umPt = avp.micronFromPixel(pt);
+			this.waypointController.creationWaypoint.pt.x = umPt.x;
+			this.waypointController.creationWaypoint.pt.y = umPt.y;	
+		}
+		this.sdMouseTracker.setTracking(this.mode == TATLASViewportMode.seadragon);
+	},
+	mouseup : function(pt){
+		this.setMode(TATLASViewportMode.seadragon);
+		if(this.measurementController.state == TMeasurementControllerState.create){			
+			if(this.activeMeasurement != null){
+				this.activeMeasurement.mouseup(pt, this);
+				if(this.activeMeasurement.measurement.state == TMeasurementState.idle){
+					this.measurementController.setState(TMeasurementControllerState.idle);
+					//this.state = TATLASViewportState.idle;
+				}
+				else{
+					this.measurementController.setState(TMeasurementControllerState.inCreation);
+					this.setMode(TATLASViewportMode.measurement);
+					//this.state = TATLASViewportState.inCreation;
+				}
+				
+			}
+			return false;
+			//this.activateMeasurement(null);
+		}
+		else if(this.waypointController.state == TWaypointControllerState.createWaypoint){
+			this.waypointController.setState(TWaypointControllerState.idle);
+		}
+		else if(this.waypointController.state == TWaypointControllerState.idle){
+			if(this.activeWaypoint != null){
+				this.activeWaypoint.mouseup(pt, this);
+				this.waypointController.setState(TWaypointControllerState.idle);
+			}
+		}
+		if(this.activeMeasurement != null){
+			this.activeMeasurement.mouseup(pt, this);
+		}
+	},
+	click : function(pt){
+		var i = 0;
+		while(i <  this.displayMeasurementList.length){
+			if(this.displayMeasurementList[i].hitTest(pt, this)){
+				this.setMode(TATLASViewportMode.measurement);
+				return false;
+				break;
+			}
+			i++;
+		}
+		//this.sdMouseTracker.setTracking(this.mode == TATLASViewportMode.seadragon);
+		this.sdMouseTracker.setTracking(false);
+		this.setMode(TATLASViewportMode.seadragon);	
+		return false;
+	},
+	dblclick: function(pt){
+		var i = 0;
+		while(i <  this.displayMeasurementList.length){
+			if(this.displayMeasurementList[i].hitTest(pt, this)){
+				this.setMode(TATLASViewportMode.measurement);
+				this.measurementController.selectMeasurement(this.displayMeasurementList[i].measurement);
+				this.displayMeasurementList[i].dblclick(pt, this);				
+				break;
+			}
+			i++;
+		}
+		if(this.mode == TATLASViewportMode.seadragon){
+			var sdPt = new Seadragon.Point(pt.x, pt.y);
+			sdPt = this.sdViewer.viewport.pointFromPixel(sdPt);
+			this.sdViewer.viewport.zoomBy(2, sdPt, false);			
+		}
+		this.setMode(TATLASViewportMode.seadragon);
+	},
+	setMode: function(M){
+		this.mode = M;
+	},
+	activateMeasurement: function(dM){
+		this.activeMeasurement = dM;
+		if(dM == null)
+			this.measurementController.activateMeasurement(null);
+		else
+			this.measurementController.activateMeasurement(dM.measurement);
+	},
+	activateWaypoint: function(dWP){
+		this.activeWaypoint = dWP;
+		if(dWP == null)
+			this.waypointController.activateWaypoint(null);
+		else
+			this.waypointController.activateWaypoint(dWP.waypoint);
+	}, 
+	setCenter: function(umPt){
+		var nPt = this.pointFromMicron(umPt);
+		this.sdViewer.viewport.panTo(nPt);
+		this.resetDisplayMeasurementViewportChange();
+	},
+	addDetectorNameHTML: function(){
+		this.$e.append($('<div></div>').attr('class', 'avpDetectorName'));
+		this.$e.find('.avpDetectorName').html(this.detector);
+	}
+});

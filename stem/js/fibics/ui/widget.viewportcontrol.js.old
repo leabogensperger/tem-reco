@@ -1,0 +1,19 @@
+TViewportModeControl = Class.extend({		
+	init: function (AVController){
+		this.AVController = AVController ;
+		this.buildHTML();
+	},
+	buildHTML: function(){
+		this.$e = $("<div></div>").attr('id', 'ATLASViewportDisplayLayoutChanger');
+		//this.$e.append($('<span>Display Layout</span><br>'));
+		this.$e.append("<input type='radio' value='stack' id='DisplayLayoutStack' name='DisplayLayout' /><label for='DisplayLayoutStack' class='button'>"+ _e('stack') + "</label>");
+		this.$e.append("<input type='radio' value='side' id='DisplayLayoutSide' name='DisplayLayout' /><label for='DisplayLayoutSide' class='button' >"+ _e('side') + "</label>");
+		this.$e.find("#ATLASViewportDisplayLayoutChanger" ).buttonset();
+		var AVC = this.AVController;
+		$('#ATLASViewportDisplayLayoutChanger').children().on(TouchMouseEvent.DOWN, function(e){			  // former click
+			var aMode = $('#' + $(this).attr('for')).val();
+			AVC.setDisplayLayout(aMode);
+			return false;
+		});		
+	}
+});

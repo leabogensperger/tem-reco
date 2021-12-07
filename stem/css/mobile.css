@@ -1,0 +1,23 @@
+@charset "utf-8";
+/* CSS Document */
+
+@media screen and (orientation:portrait) {
+ .ABBVCaption{
+ display:none;
+}
+#FooterLeftButtonsCTNR{
+max-width:75px;
+}
+#FooterLeftInfo{
+max-width:75px;
+}
+#FooterWidgetCTNR{
+max-width:180px;
+overflow:hidden;
+}
+}
+/* Landscape */
+@media screen and (orientation:landscape) {
+   /* Landscape styles here */
+}
+

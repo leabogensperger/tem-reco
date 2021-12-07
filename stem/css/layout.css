@@ -1,0 +1,21 @@
+@charset "utf-8";
+/* CSS Document */
+
+.LayoutElement{
+float:left;	
+}
+
+#LayoutManager{
+min-height:100px;
+}
+
+.anElement{
+width:100px;	
+height:100px;
+}
+
+
+
+.FillerElement{
+float:right;	
+}

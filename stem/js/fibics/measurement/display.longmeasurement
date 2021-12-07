@@ -1,0 +1,56 @@
+
+
+
+TLongMeasurementDisplay = TSimpleMeasurementDisplay.extend({
+	init: function(M){
+		this._super(M);	
+	},
+	hitTest: function(pt, avp){
+		
+	},
+	draw: function(avp){
+		var dPt1 = avp.pixelFromMicron(this.measurement.pt[0]);
+		var dPt2 = avp.pixelFromMicron(this.measurement.pt[1]);
+		var vpHeight = $(avp.canvas).height();
+		var vpWidth = $(avp.canvas).width();
+		switch(this.longMeasurementType){
+			case TLongMeasurementType.horizontal:
+				var lPt1 = new TATLASPoint(dPt1.x, 0);
+				var lPt2 = new TATLASPoint(dPt1.x, vpHeight);
+				var lPt3 = new TATLASPoint(dPt2.x, 0);
+				var lPt4 = new TATLASPoint(dPt2.x, vpHeight);
+			break;
+			case TLongMeasurementType.vertical:
+				var lPt1 = new TATLASPoint(0, dPt1.y);
+				var lPt2 = new TATLASPoint(vpWidth, dPt1.y);
+				var lPt3 = new TATLASPoint(0, dPt2.y);
+				var lPt4 = new TATLASPoint(vpWidth, dPt2.y);
+			break;
+		}		
+		avp.ctx.strokeStyle = this.measurement.outlineColor; 
+		avp.ctx.fillStyle = this.measurement.outlineColor;
+		avp.ctx.lineWidth = parseFloat(this.measurement.lineThickness) + Math.max(3, this.measurement.lineThickness*0.6);
+		avp.ctx.lineCap = 'square';
+		this.drawLine(avp.ctx, lPt1, lPt2);
+		this.drawLine(avp.ctx, lPt4, lPt4);
+		if(this.measurement.selected)
+			this.drawNodes(avp);
+		
+	},
+	mousemove: function(pt, avp){
+		
+		var umPt = avp.micronFromPixel(pt);
+		
+		switch(this.longMeasurementType){
+			case TLongMeasurementType.horizontal:
+				this.measurement.pt[0].y = umPt.y;
+				this.measurement.pt[1].y = umPt.y;
+				
+			break;
+			case TLongMeasurementType.vertical:
+				this.measurement.pt[0].x = umPt.x;
+				this.measurement.pt[1].x = umPt.x;
+			break;
+		}
+	}
+});

@@ -1,0 +1,104 @@
+@charset "utf-8";
+/* CSS Document */
+
+#slideShowDelay {
+	width:50px;
+}
+#SlideShowTopBar {
+	position:absolute;
+	background-color:#000;
+	width:100%;
+	height:auto;
+	z-index:91;
+	display:none;
+	border-bottom:1px solid #666;
+	top:0px;
+	font-size:10pt;
+	text-transform:uppercase;
+	padding-top: 5px;
+}
+#SlideShowTopBarPadded {
+	padding:5px 10px;
+	float:left;
+	overflow:hidden;
+}
+#SlideShowViewCaption {
+	font-weight:bold;
+	font-size:1.1em;
+	display:inline-block;
+	margin-right:10px;
+}
+#SlideShowViewCounter {
+	display: inline-block;
+	font-size: 8px;
+	position: relative;
+	top: -5px;
+}
+#SlideShowViewDescription {
+	display:inline-block;
+}
+#SlideShowTopBarStop, #SlideShowTopBarPause, #SlideShowTopBarResume {
+	font-size: 7pt;
+	text-align: right;
+	float: right;
+	padding: 2px 5px 0px 15px;
+	cursor:pointer;
+}
+#SlideShowTopBarStop {
+	background-image:url(../images/stop_slide_show.png);
+	background-position:center left;
+	background-repeat:no-repeat;
+}
+#SlideShowTopBarPause {
+	background-image:url(../images/pause_slide_show.png);
+	background-position:center left;
+	background-repeat:no-repeat;
+}
+#SlideShowTopBarResume {
+	background-image:url(../images/resume_slide_show.png);
+	background-position:center left;
+	background-repeat:no-repeat;
+	display: none;
+}
+#SlideShowTopBarEnterToNext {
+	font-size: 6pt;
+	text-align: right;
+	float: right;
+	padding: 2px 5px 5px 15px;
+}
+.slideShowDeleteX {
+	cursor:pointer;
+	color:#f00;
+	float:right;
+	padding: 1px 3px 1px 5px;
+}
+#SlideShowLinkedImageryList {
+	margin:10px 0;
+	padding: 10px 0 0 15px;
+}
+#SlideShowLinkedImageryList li {
+	list-style:decimal;
+	clear:both;
+	padding:2px 0px 3px 5px;
+}
+#SlideShowLinkedImageryList li:hover {
+	background-color:#0D0D0D;
+}
+#slideShowInfoIcon {
+	float:left;
+	padding:3px;
+	margin:10px;
+	cursor:pointer;
+}
+#slideShowInfoPanel {
+	padding:10px 20px;
+	display:none;
+	float:none;
+	clear:both;
+}
+.slideShowKey {
+	min-width:100px;
+	display:inline-block;
+	text-align:right;
+	color:#DDD;
+}

@@ -1,0 +1,23 @@
+@charset "utf-8";
+/* CSS Document */
+
+#JSDisabled{
+text-align:center;
+display:none;
+}
+
+#JSDisabled h1{
+font-size:40px;		
+}
+
+.bbvTitle{
+font-size:0.4em;	
+}
+
+#JSDisabled p{
+color:#999;	
+max-width:400px;
+display:block;
+clear:both;
+margin:10px auto;
+}

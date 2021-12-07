@@ -1,0 +1,22 @@
+.jUIPadding {
+	margin:10px;
+	overflow:hidden;
+}
+.jAlertIcon {
+	float:left;
+	margin:10px 20px 10px 10px;
+	display:inline-block;
+	background-image:url(../images/warning_sign_small.png);
+	width:60px;
+	height:56px;
+}
+
+.jMessageIcon {
+	float:left;
+	margin:0px 20px 10px 10px;
+	display:inline-block;
+	background-image:url(../images/message_sign.png);
+	width:60px;
+	height:56px;
+	background-size:contain;
+}

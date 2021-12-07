@@ -1,0 +1,116 @@
+@charset "utf-8";
+/* CSS Document */
+
+#blendingPanel {
+	width:100px;
+}
+fieldset {
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	box-sizing: border-box;         /* Opera/IE 8+ */
+}
+.blendingControlLine {
+	white-space:nowrap;
+	width:95%;
+	clear:both;
+	margin-bottom:5px;
+}
+.blendingTable td {
+	text-transform:uppercase;
+	font-size:8pt;
+}
+.ChannelSelect {
+	margin-left:10px;
+}
+.opacityVal {
+	padding-left:0px;
+	float:right;
+}
+.blendCtrlCaption {
+	text-align:right;
+	padding-right:10px;
+	color:#999;
+	width:50px;
+}
+.blendingPlusSign {
+	padding:0px 10px;
+	color:#999;
+}
+.blendingTable td {
+	padding:5px;
+}
+.histogramCanvas {
+	float:right;
+	margin:10px;
+}
+.blendingFS {
+	float:left;
+}
+.ImageBlendingControls {
+	overflow:hidden;
+	margin:10px 10px 10px 0;
+}
+.BlendingOptionBlock {
+	clear:both;
+	background-color:#222;
+	overflow:hidden;
+	margin:5px 0px;
+	width:320px;
+}
+.BlendingOptionPadding {
+	padding:10px;
+	overflow:hidden;
+}
+.bufferCanvas {
+}
+#refreshingOnTopOfCanvas {
+	position:absolute;
+	top:0px;
+	left:0px;
+	padding:5px 20px 5px 10px;
+	background-color:rgba(0, 0, 0, 0.5);
+}
+.BlendingEye {
+	cursor:pointer;
+	margin:0px 5px;
+}
+.ChannelOptionsCTRLs {
+	float:right;
+	overflow:hidden;
+}
+.DeleteChannel {
+	float:right;
+	font-weight:bold;
+	color:#f00;
+	cursor:pointer;
+}
+.BlendingOptionRow {
+	overflow:hidden;
+	width:100%;
+	padding:5px 0px;
+}
+.ChannelOptionCaption {
+	text-transform:uppercase;
+	color:#39F;
+}
+.BlendStrength {
+	width:100px;
+  float: left;
+	margin:5px 5px;
+}
+.blendingmode{
+float:left;
+}
+.firstBlendingInfoBlock .ChannelOptionsCTRLs, .firstBlendingInfoBlock .BlendingOptionRow3, .firstBlendingInfoBlock .blendingmode {
+	display:none;
+}
+#blendingFormContent{
+	overflow: hidden;
+	display: block;
+	position: relative;
+	float: left;
+}
+
+#blendingFormContent > canvas {
+	border: solid 1px white;
+}

@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+	<meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />
+	
+	<title>Loadingdotdotdot Example</title>
+	
+	<link rel='stylesheet' type='text/css' href='css/style.css' />
+	
+    <script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js?ver=1.3.2'></script>
+    <script type='text/javascript' src='js/jquery.loadingdotdotdot.js'></script>
+    <script type='text/javascript'>
+        $(function() {
+        
+            $("button").click(function() {
+    	
+                $("#randomArea").Loadingdotdotdot({
+                    "speed": 400,
+                    "maxDots": 4
+                });
+                
+                // just for demo
+                setTimeout(function() { $("#randomArea").html("done!"); $("#randomArea").Loadingdotdotdot("Stop"); }, 5000);
+            
+            });
+        
+        });
+    </script>
+</head>
+
+<body>
+
+	<div id="page-wrap">
+	
+	    <h1>Loading Dots jQuery Plugin <a href="js/jquery.loadingdotdotdot.js">(download)</a></h1>
+	    
+		<div id="randomArea">
+		  <p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo.</p>
+		</div>
+		
+		<button>Do something</button>
+		
+		<h1>What it does</h1>
+		
+		<p>Call it on an element and it replaces the content of that element with the text
+		"Loading" and then dots. The dots start at zero and add themselves (up to your specified limit) 
+		and then start over. It's just a simple <strong>design pattern</strong> to let a user know something is happening.</p>
+		
+		<p>It could be used right before an AJAX call, for example.</p>
+		
+		<h1>Using it</h1>
+		
+		<pre>$("#randomArea").Loadingdotdotdot({
+    "speed": 400,
+    "maxDots": 4
+});</pre>
+
+        <h1>Cleaning up</h1>
+        
+        <p>Calling the plugin starts an interval. To clean that up (like after your successful AJAX 
+        call or whatever), call it again like this:</p>
+        
+        <pre>$("#randomArea").Loadingdotdotdot("Stop");</pre>
+			
+	</div>
+	
+</body>
+
+</html>

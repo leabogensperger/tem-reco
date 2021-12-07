@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<title>jQuery XML DOM Plugin</title>
+	<!--
+		/*!
+		 * jQuery xmlDOM Plugin v1.0
+		 * http://outwestmedia.com/jquery-plugins/xmldom/
+		 *
+		 * Released: 2009-04-06
+		 * Version: 1.0
+		 *
+		 * Copyright (c) 2009 Jonathan Sharp, Out West Media LLC.
+		 * Dual licensed under the MIT and GPL licenses.
+		 * http://docs.jquery.com/License
+		 */
+	-->
+	<script type="text/javascript" src="jquery-1.3.2.min.js"></script>
+	<script type="text/javascript" src="jquery.xmlDOM.js"></script>
+	<script type="text/javascript">
+		$(function() {
+			$('#doXML').click(function() {
+				$(document)
+					.bind('xmlParseError', function(err, msg) {
+						$('#error').html( 'Error: ' + err );
+					});
+				var xml 	= $('#xml').val();
+				var $xml	= $.xmlDOM( xml );
+				$xml.find('channel > item > title');
+				$(document).data('xmldom', $xml );
+				
+			});
+			
+			$('#doQuery').click(function() {
+				var result = $( $('#query').val(), $(document).data('xmldom') );
+				$('#queryResult').val( 'Result length: ' + result.length + "\n" + result.text() );
+			});
+		});
+	</script>
+</head>
+<body>
+	<p>For the latest version of this plugin visit: <a href="http://outwestmedia.com/jquery-plugins/xmldom/">xmlDOM Plugin Site.</a>
+
+<textarea id="xml" style="width: 800px; font-family: mono-space; font-size: 12px; height: 400px;">
+	<myxml>
+		<title>Hello world!</title>
+	</myxml>
+</textarea>
+<input type="button" id="doXML" value="Generate XML Dom" /><br/>
+<div id="error" style="color: #A00; font-size: 12px;"></div>
+<br/><br/>
+
+<label>Query: </label> <input type="text" id="query" value="myxml > title" /> <input type="button" id="doQuery" value="Query XML DOM" /><br/>
+<h1 id="title"></h1>
+<textarea id="queryResult" style="width: 800px; font-family: mono-space; font-size: 12px; height: 400px;"></textarea>
+
+</body>
+</html>

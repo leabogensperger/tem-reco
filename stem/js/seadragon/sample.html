@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    
+    <title>Seadragon Ajax Sample Page</title>
+    
+    <script type="text/javascript" src="seadragon-dev.js"></script>
+    <script type="text/javascript">
+        var viewer = null;
+        
+        function init() {
+            viewer = new Seadragon.Viewer("container");
+            viewer.openDzi("logo.dzi");
+        }
+        
+        Seadragon.Utils.addEvent(window, "load", init);
+    </script>
+    
+    <style type="text/css">
+        #container
+        {
+            width: 500px;
+            height: 400px;
+            background-color: black;
+            border: 1px solid black;
+            color: white;   /* text color for messages */
+        }
+    </style>
+    
+</head>
+
+<body>
+    
+    <p>
+        This is a sample page using the Seadragon Ajax Library.
+        You can view the <a href="doc/index.html">API reference</a> to learn more.
+    </p>
+    
+    <div id="container">
+    </div>
+    
+</body>
+
+</html>

@@ -1,0 +1,137 @@
+// Waypoint
+TWaypointState = {
+	idle:0,
+	move:1
+};
+
+TWaypoint = Class.extend({		
+	init: function(x, y, id, index, caption, description){
+		this.pt = new Seadragon.Point(x,y);					// the position in µm
+		this.id = id;	
+		this.caption = caption;
+		this.index = index;
+		this.imgHTML = null;								// the overlay html (spot)
+		this.captionHTML = null;							// the overlay html (caption)
+		this.state = TWaypointState.idle;
+		this.description = description;
+		this.selected = false;
+		this.visible = true;
+		this.mouseDownPointUm = new Seadragon.Point(0,0);
+		this.mouseDownRegistered = false;
+		this.captionVisible = true;
+	},	
+	setDescription: function (aDesc){
+		if(aDesc.length > g_waypointDescriptionLimit){
+			aDesc = aDesc.substring(0, g_waypointDescriptionLimit);
+		}
+		this.description = aDesc;
+	},	
+	// Converts the ID to a letter for the glyph of the waypoint
+	getLetter :function(){
+		return String.fromCharCode(this.id + 65);
+	},
+	setXY : function(x,y){
+		this.pt.x = x;
+		this.pt.y = y;
+		$(this).trigger('onChange', this);
+	},
+	moveTo: function(umPt){
+		var offsetPt;
+		if(this.mouseDownRegistered){
+			offsetPt = this.mouseDownPointUm;
+		}
+		// Take Center
+		else{
+			offsetPt = this.pt;	
+		}
+		
+		var delta = new TATLASPoint(offsetPt.x - umPt.x, offsetPt.y - umPt.y);
+
+		this.pt.x -= delta.x;
+		this.pt.y -= delta.y;
+		
+		if(this.mouseDownRegistered){
+			this.mouseDownPointUm.x -= delta.x;
+			this.mouseDownPointUm.y -= delta.y;
+		}
+		$(this).trigger('onChange', [this]);
+	},
+	moveBy: function (delta){
+		this.pt.x += delta.x;
+		this.pt.y += delta.y;
+		$(this).trigger('onChange', [this]);				
+	},
+	toJSON: function(){
+		var aJSON = new Object();
+		aJSON.x = this.pt.x;
+		aJSON.id = this.id;
+		aJSON.y = this.pt.y;
+		aJSON.caption = this.caption;
+		aJSON.index = this.index;
+		aJSON.description = this.description;
+		return aJSON;
+	},
+	toXML :function(n){		
+		if(n.nodeName.toLowerCase() != 'waypoint'){
+			var $n = $('<waypoint></waypoint>');
+			$n.appendTo($(n));			
+		}
+		else
+			var $n = $(n);
+				
+		$("<id>" + this.id + "</id>").appendTo($n);
+		$("<x>" + this.pt.x + "</x>").appendTo($n);
+		$("<y>" + this.pt.y + "</y>").appendTo($n);
+		
+		if(this.caption != '')
+			$("<wpcaption>" + this.caption + "</wpcaption>").appendTo($n);
+		$("<index>" + this.index + "</index>").appendTo($n);
+		$("<showcaption>" + this.showLabel + "</showcaption>").appendTo($n);
+		
+		if(this.description != '')
+			$("<description>" + this.description + "</description>").appendTo($n);
+		$("<isvisible>" + this.isVisible + "</isVisible>").appendTo($n);		
+	},
+	loadFromXML : function(n){
+		if(n == null) return false;
+		if(n.nodeName.toLowerCase() != 'waypoint'){			
+			$n = $(n).children('waypoint');		
+			if($n == null) return false;
+		}
+		$n = $(n);		
+		var n = $n.children('x');
+		if(n != null) this.pt.x = parseFloat(n.text());		
+		var n = $n.children('y');
+		if(n != null) this.pt.y = parseFloat(n.text());				
+		var n = $n.children('id');
+		if(n != null) this.id = n.text();		
+		var n = $n.children('wpcaption');
+		if(n != null) this.caption = n.text();
+		var n = $n.children('index');
+		if(n != null) this.index = n.text();
+		var n = $n.children('showcaption');
+		if(n != null) this.showcaption = n.text();
+		var n = $n.children('description');
+		if(n != null) this.description = n.text();
+		var n = $n.children('isvisible');
+		if(n != null) this.isvisible = n.text();	
+	},
+	select: function(){
+		this.selected = true;		
+	},
+	deselect: function(){
+		this.selected = false;
+	},
+	getPositionHTML: function(){
+		return "<span>"+ this.pt.x.toFixed(3) + ", " + this.pt.y.toFixed(3) + " &mu;m</span>";	
+	},
+	setVisible: function(f){
+		this.visible = f;
+		$(this).trigger('onSetVisible', [this]);
+	},
+	setLabelVisible: function(f){
+		this.captionVisible = f;
+		$(this).trigger('onSetLabelVisible', [this]);
+	}
+});
+

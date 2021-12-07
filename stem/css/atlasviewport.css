@@ -1,0 +1,89 @@
+@charset "utf-8";
+/* CSS Document */
+
+.ATLASViewportCTNR {
+	position:absolute;
+}
+#AVPCBlocker {
+	z-index: 90;
+	position:absolute;
+	top:0px;
+}
+.noCursor{
+	cursor:none;
+}
+
+.AVPCDarkBlocker{
+	background-color:rgba(0, 0, 0, 0.5);	
+}
+#MasterATLASViewportCTNR {
+	position:relative;
+	overflow:hidden;
+}
+.ATLASViewportCanvas {
+	position:absolute;
+	width:1000px;
+	height:1000px;
+}
+.avpDetectorName {
+	position:absolute;
+	top:0px;
+	left:0px;
+	color:#fff;
+	background-color:rgba(0, 0, 0, 0.5);
+	padding:7px;
+	text-shadow: 1px 1px 0px #000000;
+	filter: dropshadow(color=#000000, offx=1, offy=1);
+	font-size:8pt;
+}
+
+.avpImageScale{
+	position:absolute;
+	bottom:0px;
+	right:0px;
+	color:#fff;
+	background-color:rgba(0, 0, 0, 0.5);
+	padding:7px;
+	text-shadow: 1px 1px 0px #000000;
+	filter: dropshadow(color=#000000, offx=1, offy=1);
+	font-size:8pt;
+}
+.ATLASViewport {
+	width: 500px;
+	height: 500px;
+	position: absolute;
+	top: 0px;
+	padding: 0;
+	margin: 0;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+.ATLASViewport img {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+.AtlasVPCursor {
+	position:absolute;
+	display:none;
+	z-index:1000;
+}
+img{
+	image-rendering: pixelated !important;
+}
+canvas {
+	/*image-rendering: optimizeSpeed !important;
+	image-rendering: -moz-crisp-edges !important;
+	image-rendering: -webkit-optimize-contrast !important;
+	image-rendering: optimize-contrast !important;*/
+	-ms-interpolation-mode: nearest-neighbor !important;
+	image-rendering: pixelated !important;
+}
+

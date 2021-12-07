@@ -1,0 +1,57 @@
+.textAreaWrapper {
+	width:97%;
+}
+#wpDescription {
+	width:100%;
+}
+.wpLabel {
+	width:80px;
+	min-width: 80px !important;
+	display:inline-block;
+	text-align:right;
+	color:#999;
+	font-size:8pt;
+	text-transform:uppercase;
+}
+#waypointControlsCTNR {
+	padding:5px;
+}
+.wpLabelInList {
+	max-width: 130px;
+	display: inline-block;
+	overflow: hidden;
+	min-width: 100px;
+}
+#waypointList li {
+	cursor:pointer;
+	padding:2px 4px;
+	margin:0px;
+}
+ul#waypointList {
+	margin:3px 3px 3px 0px;
+	padding:0px 0px 0px 5px;
+	list-style:none;
+	overflow-x:hidden;
+	overflow-y:auto;
+}
+.wayPtLabelPos input[type=text] {
+	background-color:#000 !important;
+}
+.waypointButtons {
+	float:right;
+	-webkit-user-select: none;
+	-moz-user-select:none;
+}
+.waypointButtons img {
+	margin:0px 3px;
+}
+.ui-tooltip {
+	padding:5px;
+}
+.undefinedLabel {
+	font-style:italic;
+	color:#666;
+}
+.xyWP {
+	width:60px;
+}

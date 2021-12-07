@@ -1,0 +1,145 @@
+@charset "utf-8";
+/* CSS Document */
+
+
+#AtlasViewWidgetCTNR {
+	min-height:120px;
+	overflow:hidden;
+	/*position:relative;*/
+	position: absolute;
+}
+#viewWidgetHolder {
+	float: left;
+	background-color:#000;
+	min-height:120px;
+	border:0px solid #0f0;
+	margin-top:-20px;
+}
+.AtlasViewItem {
+	background-color:#000;
+	float:left;
+	cursor:pointer;
+	position:relative;
+	margin-right:10px;
+	width:120px;
+	height:120px;
+}
+.AtlasViewBrowserButton {
+	position:absolute;
+	top:0px;
+	/*width:18px;*/
+	width: 32px;
+	min-height:120px;
+	background-color:rgba(0, 0, 0, 0.5);
+	display:none;
+	background-position:center center;
+	background-repeat:no-repeat;
+	cursor:pointer;
+	z-index:20;
+}
+#rightAtlasViewBrowserButton {
+	right:0px;
+	background-image:url(../images/view_widget_right_arrow.png)
+}
+#leftAtlasViewBrowserButton {
+	left:0px;
+	background-image:url(../images/view_widget_left_arrow.png)
+}
+#AtlasViewWidgetAllImageCTNR {
+	/*position:absolute;*/
+    position: relative;
+	width:100%;
+}
+.deleteViewButton {
+	padding:5px;
+	background-color:#000;
+	color:#f00;
+	cursor:pointer;
+	position:absolute;
+	top:5px;
+	right:5px;
+	display:none;
+	z-index:10;
+}
+#ViewScrollBar {
+	position:absolute;
+	/*bottom:0;*/
+	bottom: 30px;
+	height:10px;
+	width:100%;
+	display:none;
+}
+#ScrollBarScroller {
+	background-color:#555;
+	height:10px;
+	min-width:50px;
+	position:relative;
+	bottom:3px;
+	cursor:pointer;
+	opacity: .75;
+	border: solid 1px white;
+}
+.aViewName{
+	position:absolute;
+	background-color:rgba(0,0,0,0.5);
+	width:100%;
+	bottom:30px;
+	left:0px;
+	box-sizing: border-box;
+	padding:5px;
+	display:none;
+}
+
+.viewCenterCoord{
+width:50px;
+margin-right:3px;
+}
+
+.viewDim{
+width:50pt;
+margin-right:10px;
+}
+
+.editViewRow{
+padding:3px;
+white-space:nowrap;}
+
+label.viewCaption{
+width:100px;
+text-align:right;
+color:#ccc;
+display:inline-block; /* useless if used with float, no? */
+float:left;
+text-transform:uppercase;
+font-size:10pt;
+}
+
+/*
+
+Smaller Windows Size
+
+*/
+
+@media (max-width: 1025px) {
+
+.AtlasViewItem{
+margin-right:5px;
+width:50px;
+height:50px;
+}
+
+.AtlasViewItem > img{
+width:50px !important;
+height:50px !important;
+}
+
+#AtlasViewWidgetCTNR {
+	min-height:50px;
+}
+#viewWidgetHolder {
+	min-height:50px;
+	margin-top:0px;
+}
+
+
+}

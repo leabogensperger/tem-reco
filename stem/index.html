@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!--<meta http-equiv="X-UA-Compatible" content="chrome=1">-->
+<meta name="description" content='ATLAS Browser-Based Viewer from Fibics Incorporated. View images of several gigapixels in your favorite browser.' />
+<meta name='keywords' content='ATLAS, Carl Zeiss, Gigapixel, SEM, Seadragon' />
+<meta name="viewport" content="initial-scale=1.0, width=device-width, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name='version' content='2.1' />
+<link href="css/no-js.css" rel="stylesheet" type="text/css" />
+
+<title>ATLAS - Browser-Based Viewer - Version 2</title>
+
+<script type="text/javascript" src="js/apploader.js"></script>
+
+<link href="css/error.css" rel="stylesheet" type="text/css" />
+<link href="css/application.css" rel="stylesheet" type="text/css" />
+<link href="css/footer.css" rel="stylesheet" type="text/css" />
+<link href="css/atlasviewport.css" rel="stylesheet" type="text/css" />
+<link href="js/jquery/jquery-minicolors-master/jquery.minicolors.css" rel="stylesheet" type="text/css" />
+<link href='js/jquery/jqueryui/1.10.4/css/dark-hive/jquery-ui-1.10.4.custom.css' rel="stylesheet" type="text/css" />
+<link rel="icon" type="image/vnd.microsoft.icon" href="images/favicon.ico" />
+<link rel="icon" type="image/vnd.microsoft.icon" href="images/atlas_favicon_24px.ico" />
+<link rel="icon" type="image/png" href="images/favicon.png" />
+<link href='http://fonts.googleapis.com/css?family=Istok+Web:400,700italic,700,400italic' rel='stylesheet' type='text/css'>
+
+<script type="text/javascript">
+	$(document).ready(function(){
+		// remove the javascript disabled block
+		$('#JSDisabled').remove();
+		G_APPLICATION_CTRL = new TApplicationController();
+	});
+</script>
+
+<script type="text/javascript">
+	// remove the javascript disabled block
+	var errorBlock = document.getElementById('JSDisabled');
+	if((errorBlock != undefined) && (errorBlock != null))
+		errorBlock.parentElement.removeChild(errorBlock);
+</script>
+
+</head>
+<body>
+<!--  This is where all the viewports needs to be added-->
+<div id='MasterATLASViewportCTNR'>
+</div>
+
+<div id='JSDisabled'>
+<h1>Atlas<br />
+  <span class='bbvTitle'>
+   Browser-Based<br />
+   Viewer
+  </span>
+</h1>
+
+<h2>Error!</h2>
+  <p>Something that we did not expected went wrong. It appears that your browser has Javascript disabled.</p>
+  <p>The Atlas Browser-Based Viewer requires that Javascript is turned on.</p>
+  <p>Please turn on Javascript in your browser and reload that page.</p>
+</div>
+
+<script type="text/javascript">
+	// remove the javascript disabled block
+	var errorBlock = document.getElementById('JSDisabled');
+	errorBlock.parentElement.removeChild(errorBlock);
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,173 @@
+div#SidebarWidgetCTNR {
+	position:absolute;
+	right:0px;
+	top:220px;
+	z-index:70;
+
+}
+div#SidebarWidget {
+	position:absolute;
+	z-index:70;
+	right:-2px;
+	top:5px;
+	/*width:43px;*/
+	background-color:#000;
+	overflow:hidden;
+	color:#fff;
+	border-right:0px !important;
+	-webkit-box-shadow: 0px 0px 8px #000000;
+	-moz-box-shadow: 0px 0px 8px #000000;
+	box-shadow: 0px 0px 8px #000000;
+	padding:2px;
+}
+.wPanel .ui-widget-header {
+	cursor:pointer;
+}
+.panelCloser {
+	float:right;
+	padding-right:10px;
+	font-size:1.2em;
+	line-height:1.2em;
+}
+.wButton .ui-button-text {
+	padding:2px !important;
+}
+#SideWidgetPanelCTNR {
+	left:-45px;
+	top:10px;
+	position:absolute;
+}
+.wPanel {
+	position:absolute;
+	right:0px;
+	min-width:300px;
+	overflow: hidden;
+}
+.PanelContent {
+	overflow-y:auto;
+}
+#SaveLoadWidgetPanel > .PanelContent {
+	overflow-x: hidden;
+}
+legend {
+	color:#999;
+	font-size:8pt;
+	text-transform:uppercase;
+}
+.ui-header-padding {
+	padding:5px 10px 5px 10px !important;
+}
+.ui-header-margin {
+	margin:5px 0 0 0;
+}
+.miInfoCaption {
+	min-width:100px;
+	/* max-width:100px; */
+	text-align:right;
+	color:#bbb;
+	text-shadow: 1px 1px 0px #000000;
+	filter: dropshadow(color=#000000, offx=1, offy=1);
+	vertical-align:top;
+	padding-right:5px;
+	text-transform:uppercase;
+	font-size:8pt;
+}
+.miInfoRow {
+	border-bottom:1px solid #333;
+}
+.noTopLine {
+	border-top:0px;
+}
+.miInfoUnits {
+	text-transform:none !important;
+	margin-left:1pt;
+}
+.miInfoValue {
+	vertical-align:top;
+	text-transform:none;
+	font-size:8pt;
+	min-width: 90px;
+}
+.wContentPadding {
+	padding:10px 5px;
+}
+.wbutton-margin {
+	overflow:hidden;
+	margin:2px;
+}
+.sideWidgetIcon {
+	width:32px;
+	height:32px;
+}
+#projectInfoDiv label {
+	text-transform:uppercase;
+	font-size:11px;
+	color:#999;
+}
+.inLineEditor {
+	border:0px;
+	padding:0;
+	color:#ccc;
+	background-color:#000;
+	margin:0;
+}
+#regionEditFields label {
+	width:25%;
+	text-align:right;
+	display:inline-block;
+}
+#regionEditFields input[type=text] {
+	width:70%
+}
+#regionEditFields textarea {
+	width:100%;
+	height:60px;
+}
+#SaveLoadWidgetPanel textarea{
+width:400px;
+height:100px;
+}
+
+#regionCreateButtonsCTNR {
+	overflow:hidden;
+	width:100%;
+}
+#regionEditFields {
+	clear:both;
+	margin:5px 0px 5px 0px;
+	overflow:hidden;
+}
+#saveLoadButtonCTNR {
+	padding:20px 10px;
+	overflow:hidden;
+}
+#imageInfoTab ul {
+	font-size:7pt;
+	text-transform:uppercase;
+}
+#exportInfoDiv table {
+	width:100%;
+}
+.lineCaption{
+text-align:right;
+padding:2px;
+max-width: 100px;
+}
+.lineCaptionDisabled{
+color:#666;
+}
+.lineValue{
+padding:2px;
+}
+ @media (max-width: 1025px) {
+ .sideWidgetIcon {
+ width:16px;
+ height:16px;
+}
+.wPanel {
+	min-width:230px;
+}
+ #SideWidgetPanelCTNR {
+left:-30px;
+}
+}

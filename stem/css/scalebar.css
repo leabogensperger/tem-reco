@@ -1,0 +1,64 @@
+div#scaleBarCTNR {
+	cursor:pointer;
+	position:absolute;
+	bottom:0px;
+	left:0px;
+	overflow:hidden;
+	float:left;
+	background-color: rgba(0, 0, 0, 0.5);
+	color: rgba(0, 0, 0, 0.5);
+	z-index:50;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+div#scaleBarDim {
+	color:#fff;
+	margin:5px;
+	text-shadow:0px 0px 1px #000000;
+	filter: dropshadow(color=#000000, offx=1, offy=1);
+	white-space:nowrap;
+}
+div#scaleBarBar {
+	margin:5px;
+	height:2px !important;
+	line-height:2px;
+	border:1px solid #333;
+	background-color:#fff;
+}
+.oversized {
+	background-color:rgba(255, 0, 0, 0.25) !important;
+}
+div#scaleBar {
+	width:100px;
+	background-repeat:repeat-x;
+	background-position:bottom;
+	font-size:1px;
+	border-right:1px solid #666;
+	border-left:1px solid #666;
+	display:block;
+}
+.scaleBarOversized {
+	color:#f00 !important;
+	font-weight:bold;
+}
+#fixedScaleBarWidth {
+	width:100px;
+	margin:0px 10px;
+}
+ @media only screen and (max-device-width: 480px) {
+div#scaleBarDim {
+ margin:2px;
+}
+div#scaleBarBar {
+ margin:2px;
+ height:1px;
+}
+div#scaleBarCTNR {
+ padding:2px;
+ font-size:6pt;
+}
+}

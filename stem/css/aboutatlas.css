@@ -1,0 +1,17 @@
+.visitATLASWebSite {
+	margin:10px 10px 10px 10px;
+	float:left;
+	
+}
+
+.designedByBox{
+float:left;
+margin:10px 10px 10px 0px;
+}
+
+#DesignedForCarlZeissLink{
+clear:both;
+display:block;
+margin:10px 10px 10px 0px;
+overflow:hidden;
+}

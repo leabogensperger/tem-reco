@@ -1,0 +1,21 @@
+.CrossHair {
+	position:absolute;
+	top: 200px;
+	left: 200px;
+	z-index: 10;
+	display:none;
+}
+
+.verticalLineXH {
+	border-left: 1px solid #0f0;
+	position: absolute;
+	left:1px;
+	height:300px;
+}
+
+.horizontalLineXH {
+	border-top: 1px solid #0f0;
+	position: absolute;
+	top:1px;
+	width:300px;
+}

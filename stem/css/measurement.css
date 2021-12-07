@@ -1,0 +1,59 @@
+#annotationLimit {
+	font-size:0.8em;
+	color:#999;
+	font-style:italic;
+}
+.ui-dialog label {
+	text-align:right;
+}
+#annotationText {
+	width:250px !important;
+}
+.measurementIcon {
+	width:32px;
+	height:32px;
+}
+.mButtonMargin {
+	float:left;
+	margin:3px;
+	overflow:hidden;
+}
+#textAnnotationText {
+	width:260px;
+}
+.measurementButton .ui-button-text {
+	padding:3px 4px !important;
+	margin:3px;
+}
+#MeasurementWidgetPanel {
+	width:320px;
+}
+.measurementButtonMargin {
+	margin:2px 1px;
+	overflow:hidden;
+	float:left;
+}
+.measurementTools {
+	padding:2px;
+	overflow:hidden;
+}
+#measurementBottomButtonsCTNR {
+	padding:5px;
+	overflow:hidden;
+}
+#fontSizeCTNR{
+width:150px;	
+float:right;
+}
+#textAnnotationFontSize{
+	clear:both;
+width:30px;}
+
+@media (max-width: 1025px) {
+
+.measurementIcon {
+ width:16px ;
+ height:16px ;
+}
+
+}

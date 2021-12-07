@@ -1,0 +1,14 @@
+@charset "utf-8";
+/* CSS Document */
+
+#MessagePanelCTNR{
+position:fixed;
+top:0px;
+width:100%;
+background-color:#f00;
+color:#fff;
+padding:10px;
+z-index:1000;
+box-sizing: border-box;
+display:none;
+}
