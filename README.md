@@ -12,21 +12,25 @@ The repository is structured at follows:
 
 ## Dependencies
 
-* pytorch >= 1.7
-* astra-toolbox
+* pytorch 1.7
+* astra-toolbox 1.9
 * argparse
-* Cuda
+* Cuda 10.2
+* argparse
+* matplotlib
+* scikit-image
+* mrcfile
 
 ## Running the Algorithm
 
-After installing all of the required dependencies above you need to install the provided modules to your python environment. This can be done with
+After installing all of the required dependencies (ensure that cuda versions match when installing pytorch and astra) above you need to install the provided modules to your python environment. This can be done with
 
 ~~~
 cd ops
 python setup.py install
 ~~~
 
-The joint alignment and reconstruction algorithm can either be started directly or after a pre-alignment of the projection data has been done. This can be achieved by running the following scripts.
+The joint alignment and reconstruction algorithm can either be started directly or after a pre-alignment of the projection data has been done. This can be achieved by running the following scripts. Make sure you add the paths containing the projection data, masks from pre-alignment and tilt angles and related settings before executing the scripts.
 
 ~~~
 run_prealign.sh
