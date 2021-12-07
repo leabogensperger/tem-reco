@@ -72,20 +72,17 @@ if __name__ == '__main__':
     
     save_args_info = 'iter'+str(args.max_iter)+'_'+str(args.z)+'_'+str(2*args.crop)+'_'+str(2*args.crop + args.col_incr) + '_hz' + str(args.hz) + '_lamda'+str(args.lamda)
     save_args_info += ('_cginit' + str(args.cg_iter) + '_') if args.cg_init else '_zeroinit_'
-    save_path = args.save_path + save_args_info + str(datetime.datetime.today()).replace(' ', '_')
-    save_path = 'experiments/' + save_path
+    save_path = args.base_dir + save_args_info + str(datetime.datetime.today()).replace(' ', '_')
 
     if args.save_results and not os.path.exists(save_path):
         print('save_path: ', save_path)
         os.makedirs(save_path)
-        os.makedirs(save_path+'/images')
         
         # param settings
         file = open(save_path+'/settings.txt', 'w')
         file.write(str(args))
         file.close()
         
-    use_avg_grad = args.use_avg_grad
     calc_flow = args.calc_flow
     dyn_plot = args.dyn_plot
     max_iter = args.max_iter
@@ -150,6 +147,7 @@ if __name__ == '__main__':
     torch.cuda.empty_cache()
 
     # init primal and dual vars
+    print('\nInitial Guess with CG:')
     u = CG(proj_data*op_mask, op, [z,m,n], args.cg_iter, device) if args.cg_init else op.backward(proj_data.to(device).contiguous())
     u_old = u.clone()
     p = torch.zeros((z, m, n, 3), device=device)
@@ -163,7 +161,8 @@ if __name__ == '__main__':
     
     if dyn_plot:
         fig, ax = plt.subplots(2, 3)
-        
+    
+    print('\nStart Joint Alignment and Reconstruction:')
     for i in range(max_iter):
         print('Iteration: ', i) if i % 1 == 0 else 0
         if calc_flow:
@@ -203,7 +202,7 @@ if __name__ == '__main__':
         del Au_tmp
         torch.cuda.empty_cache()
         
-        if dyn_plot and i % 5 == 0:
+        if dyn_plot and i % 1 == 0:
             for a in ax.reshape(-1):
                 a.clear()
             plt.suptitle('iter: %d' %i)
@@ -212,8 +211,8 @@ if __name__ == '__main__':
             ax[0,2].imshow(u[:,:,n//2].cpu().T, cmap='gray'), ax[0,2].set_title('u zm')
             
             ax[1,0].imshow(q[tmax//2,:,:].cpu(), cmap='gray'), ax[1,0].set_title('q mn')
-            ax[1,1].plot(f[:,0].cpu())
-            ax[1,2].plot(f[:,1].cpu())
+            ax[1,1].plot(f[:,0].cpu()), ax[1,1].set_title('Shift f0')
+            ax[1,2].plot(f[:,1].cpu()), ax[1,2].set_title('Shift f1')
             
             fig.canvas.draw()
             plt.pause(0.1)
@@ -238,10 +237,8 @@ if __name__ == '__main__':
         # save np arrays     
         np.save(save_path+'/reconstruction.npy', u.cpu().numpy())
         np.save(save_path+'/reproj.npy', (op.forward(u)).cpu().numpy())
-
         np.save(save_path+'/proj_warped_unmasked.npy', b_save.cpu().numpy())
         np.save(save_path+'/proj_data.npy', proj_data.cpu().numpy())
-
         np.save(save_path+'/flow.npy', f.cpu().numpy())
         if calc_flow:
             np.save(save_path+'/warped_proj.npy', b.cpu().numpy())
