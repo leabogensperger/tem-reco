@@ -1,6 +1,6 @@
 # Electron Tomography - Joint Reconstruction and Alignment Algorithm
 
-This repository contains the implementation for our publication "A Joint Alignment and Reconstruction Algorithm for Electron Tomography to Visualize Immune Cell Attacks within Diabetic Mice". Furthermore, it includes the browser link to visualize the NOD islet with scanning electron transmission microscopy (STEM). Electron tomography is an imaging modality based on transmission electron microscopy (TEM), where 3D reconstructions can be obtained from 2D projection images.
+This repository contains the implementation for our publication "A Joint Alignment and Reconstruction Algorithm for Electron Tomography to Visualize In-Depth Cell-to-Cell Interactions". Furthermore, it includes the browser link to visualize the NOD islet with scanning electron transmission microscopy (STEM). Electron tomography is an imaging modality based on transmission electron microscopy (TEM), where 3D reconstructions can be obtained from 2D projection images.
 
 ## Repository Structure
 The repository is structured at follows:
