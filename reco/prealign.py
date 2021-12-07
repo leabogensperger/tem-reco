@@ -1,11 +1,9 @@
 from skimage.registration import optical_flow_tvl1
 from skimage.transform import warp as warp_sk
 import numpy as np
-import mrc
+import mrcfile
 import argparse
 import sys, os
-sys.path.append("../utils/")
-from tools import SliceViewer
 from skimage.registration import phase_cross_correlation
 from skimage.transform import resize
 from scipy import ndimage
@@ -17,6 +15,7 @@ def parse_arguments(args):
     
     parser.add_argument('--base_dir', type=str, default='', help="Base directory of projection data.")
     parser.add_argument('--mrc_file', type=str, default='', help="Mrc file name containing projection data.")
+    parser.add_argument('--angle_file', type=str, default='', help="Name of npy file containing tilt angles in tilt series order.")
     parser.add_argument('--align_cycles', type=int, default=2, help="Number of alignment cycles.")
     parser.add_argument('--factor', type=int, default=2, help="Factor to downsample projection data.")
     parser.add_argument('--save_data', type=str2bool, default=True, help="Boolean to indicate whether prealigned data should be saved.")
@@ -115,7 +114,7 @@ def restretch(proj_data_aligned, shape, new_len_round, interp_order):
     return data_aligned
     
         
-def prealign(base_dir, mrc_file, align_cycles, factor, save_data, \
+def prealign(base_dir, mrc_file, angle_file, align_cycles, factor, save_data, \
              interp_order, use_filter, save_name):
     '''
     main function to prealign projection data
@@ -137,12 +136,10 @@ def prealign(base_dir, mrc_file, align_cycles, factor, save_data, \
 
     '''    
     # get projection datah
-    data = mrc.imread(base_dir + mrc_file).astype(np.float64())
-    # data = np.load(base_dir + mrc_file)
+    data = mrcfile.open(base_dir + mrc_file,permissive=True).data.astype(np.float64())
 
     # get angles 
-    angles = np.flip(np.load(base_dir + angle_file)*np.pi/180)
-    # data = data[:,1024-512:1024+512,1024-512:1024+512]
+    angles = np.load(base_dir + angle_file)*np.pi/180
     
     # reshape projection data
     data = reshape(data, factor, interp_order)
@@ -179,5 +176,4 @@ def prealign(base_dir, mrc_file, align_cycles, factor, save_data, \
 if __name__ == "__main__":
     args = parse_arguments(sys.argv)
 
-    prealign(args.base_dir, args.mrc_file, args.align_cycles, args.factor, args.save_data, 
-             args.interp_order, args.use_filter, args.save_name)
+    prealign(args.base_dir, args.mrc_file, args.angle_file, args.align_cycles, args.factor, args.save_data, args.interp_order, args.use_filter, args.save_name)

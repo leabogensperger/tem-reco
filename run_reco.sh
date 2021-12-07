@@ -1,15 +1,15 @@
 #!/bin/bash
 
 cd reco
-python joint_align_reco.py --base_dir /home/lea/Projects/midas/Tiltseries Tomography/data/497-9C_NOD_Ctrl/trial01/ \
-                           --data_path data_resize2.npy \
-                           --mask_path mask_resize2.npy \
-                           --angle_path angles01.npy \
+python joint_align_reco.py --base_dir  \
+                           --data_path \
+                           --mask_path  \
+                           --angle_file  \
                            --save_results True \
-                           --save_path \
+                           --save_path  \
                            --calc_flow True \
                            --dyn_plot True \
-                           --max_iter 100 \
+                           --max_iter 10 \
                            --lamda 1e-1 \
                            --z 300 \
                            --crop 512 \
