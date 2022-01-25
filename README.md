@@ -10,7 +10,6 @@ The repository is structured at follows:
 * 'ops' contains custom PyTorch-Ops which need to be installed before running the joint alignment and reconstruction algorithm
 * 'stem' includes the browser link for the NOD islet
 * 'data' containing a sample tomographic dataset, that is already prealigned 
-* 'exp' where results of using FLARA will be saved
 
 ## Dependencies
 
