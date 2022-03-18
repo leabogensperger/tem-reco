@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import argparse
 import astra
 import torch.nn.functional as F
 
@@ -46,8 +47,6 @@ class OpElectronTomography:
         del proj
         torch.cuda.empty_cache()
         return torch.tensor(bproj_data, dtype=torch.float32).to(self.device).contiguous()
-
-
 
 def str2bool(arg):
     """ define str2bool type for input arguments """
@@ -121,11 +120,11 @@ def coordinate_transform(angles, phi, det_p1, det_p2):
     Ry = np.array([[np.cos(phi_y), 0., np.sin(phi_y), 0.], [0., 1., 0., 0.], [-np.sin(phi_y), 0., np.cos(phi_y), 0.], [0., 0., 0., 1.]])
     
     phi_x = 0.*np.pi/180
-    Rz = np.array([[1, 0, 0, 0.], [0, np.cos(phi_x), -np.sin(phi_x), 0], [0, np.sin(phi_x), np.cos(phi_x), 0.], [0., 0., 0., 1.]])
+    Rx = np.array([[1, 0, 0, 0.], [0, np.cos(phi_x), -np.sin(phi_x), 0], [0, np.sin(phi_x), np.cos(phi_x), 0.], [0., 0., 0., 1.]])
     
-    r = Rz @ Ry @ Rz @ r
-    u = Rz @ Ry @ Rz @ u
-    v = Rz @ Ry @ Rz @ v
+    r = Rx @ Ry @ Rz @ r
+    u = Rx @ Ry @ Rz @ u
+    v = Rx @ Ry @ Rz @ v
 
     # output vector array
     nproj = len(angles)
