@@ -2,6 +2,19 @@
 
 This repository contains the implementation for the algorithm FLARA, presented in our publication "A Joint Alignment and Reconstruction Algorithm for Electron Tomography to Visualize In-Depth Cell-to-Cell Interactions". Furthermore, it includes the browser link to visualize the NOD islet with scanning electron transmission microscopy (STEM). Electron tomography is an imaging modality based on transmission electron microscopy (TEM), where 3D reconstructions can be obtained from 2D projection images.
 
+If this is useful to you, please cite
+
+```
+@article{bogensperger2022joint,
+  title={A joint alignment and reconstruction algorithm for electron tomography to visualize in-depth cell-to-cell interactions},
+  author={Bogensperger, Lea and Kobler, Erich and Pernitsch, Dominique and Kotzbeck, Petra and Pieber, Thomas R and Pock, Thomas and Kolb, Dagmar},
+  journal={Histochemistry and Cell Biology},
+  pages={1--12},
+  year={2022},
+  publisher={Springer}
+}
+```
+
 ## Repository Structure
 The repository is structured at follows:
 
